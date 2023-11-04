@@ -115,16 +115,16 @@ model <- newModel(fnSim = sim, fnSum = st,
 ssy <- st(dEMRsmo)
 lambda_all <- list(exp(seq(-7, 0.5, length.out = 20)))
 set.seed(1234)
-sp_bsl_glasso_cMed <- selectPenalty(ssy = ssy, n = 200,
+sp_bsl_glasso_eMed <- selectPenalty(ssy = ssy, n = 200,
                                     lambda_all, theta = init_vals, M = 100, sigma = 0.5, model = model,
                                     method = 'BSL', shrinkage = 'glasso')
-sp_bsl_glasso_cMed ### Best penalty parameter: lambda = 0.00656
+sp_bsl_glasso_eMed ### Best penalty parameter: lambda = 0.0214
 
 ### Estimating the SL
 set.seed(1234)
 resultMigrant <- bsl(y = as.numeric(dEMRsmo), n = 200, M = 50000, model = model, 
                    diag(c(.0005^2,.0005^2,.0005^2,.0005^2,.0005^2,.0005^2,.0005^2,.0005^2)),
-                   method = 'BSL', shrinkage="glasso", penalty=0.00656, parallel=FALSE, verbose=TRUE)
+                   method = 'BSL', shrinkage="glasso", penalty=0.0214, parallel=FALSE, verbose=TRUE)
 
 ### Parameter estimates and 95% credible intervals
 print(show(resultMigrant))
