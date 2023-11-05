@@ -68,7 +68,7 @@ logPrior <- function(theta)
 {
   log(theta[1] > 0 & theta[2] > 0 & theta[2] < 1 & theta[5] > 0 & theta[5] < 1 &
         abs(theta[3]) < 1 & theta[4] > 0 & theta[5] > 0 & theta[5] < 2 & theta[7] > 0 &
-        theta[8] > 0 & theta[8] < 1 & theta[6] > 0 & theta[6] < 1)
+        theta[8] > 0 & theta[8] < 1 & theta[6] > 0 & theta[6] < 1 & theta[2]+theta[3]<1)
 }
 
 sim <- function(theta, T)
@@ -118,13 +118,13 @@ set.seed(1234)
 sp_bsl_glasso_wMed <- selectPenalty(ssy = ssy, n = 200,
                                     lambda_all, theta = init_vals, M = 100, sigma = 0.5, model = model,
                                     method = 'BSL', shrinkage = 'glasso')
-sp_bsl_glasso_wMed ### Best penalty parameter: lambda = 0.00656
+sp_bsl_glasso_wMed ### Best penalty parameter: lambda = 0.0214
 
 ### Estimating the SL
 set.seed(1234)
 resultMigrant <- bsl(y = as.numeric(dWMRsmo), n = 200, M = 50000, model = model, 
                    diag(c(.0005^2,.0005^2,.0005^2,.0005^2,.0005^2,.0005^2,.0005^2,.0005^2)),
-                   method = 'BSL', shrinkage="glasso", penalty=0.00656, parallel=FALSE, verbose=TRUE)
+                   method = 'BSL', shrinkage="glasso", penalty=0.0214, parallel=FALSE, verbose=TRUE)
 
 ### Parameter estimates and 95% credible intervals
 print(show(resultMigrant))

@@ -68,7 +68,7 @@ logPrior <- function(theta)
 {
   log(theta[1] > 0 & theta[2] > 0 & theta[2] < 1 & theta[5] > 0 & theta[5] < 1 &
         abs(theta[3]) < 1 & theta[4] > 0 & theta[5] > 0 & theta[5] < 2 & theta[7] > 0 &
-        theta[8] > 0 & theta[8] < 1 & theta[6] > 0 & theta[6] < 1)
+        theta[8] > 0 & theta[8] < 1 & theta[6] > 0 & theta[6] < 1 & theta[2]+theta[3]<1)
 }
 
 sim <- function(theta, T)
