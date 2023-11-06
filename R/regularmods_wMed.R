@@ -48,7 +48,7 @@ cQ<-sol$par[2]
 cR<-sol$par[3]
 
 kf<-Ksmooth(y, A, mu0, Sigma0, Phi, t(cQ), t(cR))
-dCMRsmo<-ts(c(unlist(kf$Xs)),start=c(2009,1),freq=12)
+dWMRsmo<-ts(c(unlist(kf$Xs)),start=c(2009,1),freq=12)
 
 ### AR(1)
 ar1 <- arima(dWMRsmo, order=c(1,0,0))
