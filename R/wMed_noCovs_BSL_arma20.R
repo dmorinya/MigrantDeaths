@@ -124,7 +124,7 @@ sp_bsl_glasso_wMed ### Best penalty parameter: lambda = 0.0214
 set.seed(1234)
 resultMigrant <- bsl(y = as.numeric(dWMRsmo), n = 200, M = 50000, model = model, 
                    diag(c(.0005^2,.0005^2,.0005^2,.0005^2,.0005^2,.0005^2,.0005^2,.0005^2)),
-                   method = 'BSL', shrinkage="glasso", penalty=0.0214, parallel=FALSE, verbose=TRUE)
+                   method = 'BSL', shrinkage="glasso", penalty=0.0514, parallel=FALSE, verbose=TRUE)
 
 ### Parameter estimates and 95% credible intervals
 print(show(resultMigrant))
