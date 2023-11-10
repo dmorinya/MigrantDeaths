@@ -20,7 +20,8 @@ df3 <- df3[order(df3$month), ]
 rm(df, df2, missdates)
 df3 <- df3[df3$month <= "2021-06-01", ]
 
-EMR <- read.table("Results/EMR_incidence.csv", header=T, sep=",")
+### Best fitting model is AR(1)
+EMR <- read.table("../Results/EMR_incidence.csv", header=T, sep=",")
 q2.5 <- colQuantiles(as.matrix(EMR), probs=c(0.025))
 med <- colMedians(as.matrix(EMR))
 q97.5 <- colQuantiles(as.matrix(EMR), probs=c(0.975))
@@ -35,7 +36,7 @@ resum$q97.5[151:300] <- resum$med[151:300]
 resum$med2 <- c(resum$med[1:150], rep(NA, 150))
 round(sum(resum$med[resum$Value=="Registered"])/sum(resum$med[resum$Value=="Estimated"])*100)
 
-png("Results/EMR_reconstructed.png", width=1200, height=800)
+png("../Results/EMR_reconstructed.png", width=1200, height=800)
 ggplot(data=resum, aes(x=Date, y=med, col=Value)) +
   geom_line()+xlab("Date")+ylab("Deaths")+geom_ribbon(aes(ymin = q2.5, ymax = q97.5), fill = "lightgrey", show.legend=F)+
   labs(col = "Value")+ggtitle("Eastern Mediterranean Route")+
