@@ -85,7 +85,33 @@ df_migfiles_daily_med <- df_migfiles_daily %>%
   ) %>% 
   select(date, route, total_dead_and_missing)
 
-# one observation with Event ID 70806 in the central mediterranean doesnt have a date
+# Frontex arrivals
+
+url_frontex <- "https://www.frontex.europa.eu/assets/Migratory_routes/2024/Monthly_detections_of_IBC_2024_01_05.xlsx"
+temp3 <- tempfile(fileext = ".xlsx")
+download.file(url_frontex, temp3, mode = "wb")
+
+# Read the Excel file
+df_frontex <- read_excel(temp3)
+
+# data transformations
+df_frontex_monthly_med <- df_frontex %>% 
+  pivot_longer(cols = 4:ncol(df_frontex)) %>% 
+  mutate(date = ymd(paste0(substr(name, start=4, stop=8),"-",substr(name, start=1, stop=3),"-",01)),
+         route = case_when(
+           Route %in% c("Black Sea Route", "Circular Route from Albania to Greece","Eastern Borders Route", "Other","Western Balkan Route") ~ "OR",
+           Route %in% c("Central Mediterranean Route") ~"CMR",
+           Route %in% c("Eastern Mediterranean Route") ~ "EMR",
+           Route %in% c("Western African Route") ~ "WAR",
+           Route %in% c("Western Mediterranean Route") ~ "WMR",
+         )) %>% 
+  filter(route %in% c("CMR","WMR","EMR","WAR")) %>% 
+  group_by(route, date) %>% 
+  summarize(total_arrivals_frontex = sum(value, na.rm=T)) %>% 
+  select(date, route, total_arrivals_frontex) %>% 
+  ungroup()
+
+ggplot(df_frontex_long, aes(x=date, y=total_arrivals_frontex)) + geom_line() + facet_grid(~route)
 
 # Join data and aggregate to the month
 
@@ -103,14 +129,19 @@ df_monthly_med <- df_daily_med %>%
   mutate(date_month = ymd(paste0(year(date),"-",month(date),"-",01))) %>% 
   group_by(date_month, route) %>% 
   summarise(total_dead_and_missing = sum(total_dead_and_missing, na.rm=T),
-            total_survivors = sum(total_survivors, na.rm = T),
+            total_survivors = ifelse(date_month < min(df_mmp_daily_med$date),NA,sum(total_survivors, na.rm = T)),
             hhi_deaths_month = sum(share_deaths_day^2)) %>% # HHI (fractionalization index)
   ungroup() %>% 
   rename(date = date_month) %>% 
   select(date,route,total_dead_and_missing,total_survivors,hhi_deaths_month)
 
+# Join the frontex data on arrivals
+
+df_monthly_med <- left_join(df_monthly_med, df_frontex_monthly_med, by=c("date","route"))
+
 g1 <- ggplot(df_monthly_med, aes(x=date, y=total_dead_and_missing)) + geom_col() + facet_wrap(~route, scales="free") + ggtitle("Total death and missing by route")
 g2 <- ggplot(df_monthly_med, aes(x=date, y=total_survivors)) + geom_col() + facet_wrap(~route, scales="free") + ggtitle("Total survivors by route")
 g3 <- ggplot(df_monthly_med, aes(x=date, y=hhi_deaths_month)) + geom_line() + facet_wrap(~route, scales="free")  + ggtitle("Fractionalization index at the month by route")
+g4 <- ggplot(df_monthly_med, aes(x=date, y=total_arrivals_frontex)) + geom_line() + facet_wrap(~route, scales="free")  + ggtitle("Total arrivals by route")
 
-gridExtra::grid.arrange(g1,g2,g3, ncol=3)
+gridExtra::grid.arrange(g1,g2,g3,g4, ncol=4)
