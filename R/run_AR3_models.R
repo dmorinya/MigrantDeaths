@@ -1,0 +1,5 @@
+source("estimate_AR3_UR.R")
+source("estimate_AR3_UR_2.R")
+source("estimate_AR3_UR_3.R")
+source("estimate_AR3_UR_4.R")
+source("estimate_AR3.R")

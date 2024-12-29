@@ -1,0 +1,51 @@
+
+R version 4.4.2 (2024-10-31) -- "Pile of Leaves"
+Copyright (C) 2024 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu
+
+R és programari lliure i ve sense ABSOLUTAMENT CAP GARANTIA.
+Podeu redistribuir-lo sota certes condicions.
+Escriviu «license()» o «licence()» per a més detalls sobre la seva distribució.
+
+R és un projecte col·laboratiu amb molts col·laboradors.
+Escriviu «contributors()» per a més informació i
+«citation()» sobre com citar R o els paquets de R en publicacions.
+
+Escriviu «demo()» per a algunes demostracions, «help()» per a l'ajuda en línia, o
+«help.start()» per a una interfície de navegador HTML a l'ajuda.
+Escriviu «q()» per a sortir de R.
+
+> source("estimate_AR1_UR.R")
+
+S'està adjuntant el paquet: ‘dplyr’
+
+Els següents objectes estan emmascarats des de ‘package:stats’:
+
+    filter, lag
+
+Els següents objectes estan emmascarats des de ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+S'està carregant el paquet requerit: rjags
+S'està carregant el paquet requerit: coda
+Linked to JAGS 4.3.0
+Loaded modules: basemod,bugs
+
+S'està adjuntant el paquet: ‘R2jags’
+
+L'objecte següent està emmascarat per ‘package:coda’:
+
+    traceplot
+
+S'està carregant el paquet requerit: foreach
+S'està carregant el paquet requerit: iterators
+S'està carregant el paquet requerit: parallel
+> source("estimate_AR1_UR_2.R")
+> source("estimate_AR1_UR_3.R")
+> source("estimate_AR1_UR_4.R")
+> source("estimate_AR1.R")
+> 
+> proc.time()
+       usuari       sistema transcorregut 
+        2.735         2.222     15899.937 

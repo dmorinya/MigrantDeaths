@@ -1,21 +1,12 @@
-library(readxl)
 library(dplyr)
-library(MMWRweek)
-library(tidyr)
-library(ggplot2)
-library(lubridate)
 library(R2jags)
 library(doParallel)
 
-source("R/get_data.R")
-df <- df_monthly_med %>% distinct()
-names(df) <- c("date", "route", "deaths", "survivors", "At", "arrivals")
+load("../Data/df_update_12_2024.Rdata")
 
-df2 <- df %>%
-  pivot_wider(names_from = route, values_from = c(deaths, survivors, At, arrivals), names_sep = "_")
-
-### Select time period with complete information (2014-2023)
-df2 <- df2[df2$date>="2014-01-01" & df2$date <= "2023-12-01", ]
+###
+### Select time period with complete information (depending on the mortality rate definition)
+df2 <- df[df$date_month >="2016-01-01" & df$date_month  <= "2023-11-01", ]
 
 ### Replace NAs by zeros
 df2 <- df2 %>% replace(is.na(.), 0)
@@ -55,52 +46,18 @@ ar2_model <- function()
 }
 
 ### CENTRAL MEDITERRANEAN
-ncores <- detectCores() - 1  
-registerDoParallel(cores=ncores)  
-cl <- makeCluster(ncores)  
+ncores <- detectCores() - 1
+registerDoParallel(cores=ncores)
+cl <- makeCluster(ncores)
 
-df2$Incidence_CMR <- df2$deaths_CMR/(df2$deaths_CMR+df2$survivors_CMR+df2$arrivals_CMR)*100
-df2$Incidence_CMR[is.nan(df2$Incidence_CMR)] <- 0.01
-data_CMR <- list(y=df2$Incidence_CMR, N=length(df2$Incidence_CMR), At=df2$At_CMR)
+data_CMR <- list(y=df2$mortality_rate*100, N=length(df2$mortality_rate),
+                 At=df2$hhi_deaths_month)
 
 params <- c("w_b0", "w_b1", "q_b0", "q_b1", "delta_b0", "phi1", "phi2", "sigma2_w", "component_chosen")
 clusterExport(cl, list("data_CMR", "params"))
-system.time(cmed_route <- jags.parallel(data = data_CMR, inits = NULL, parameters.to.save = params,                  model.file = ar2_model, n.chains = 5, n.iter = 50000, n.burnin = 10000, n.thin = 1000, 
-            n.cluster = ncores, DIC = T, jags.seed=1234, RNGname = "Wichmann-Hill", 
-            jags.module = "mix"))
+system.time(cmed_route <- jags.parallel(data = data_CMR, inits = NULL, parameters.to.save = params,
+                                        model.file = ar2_model, n.chains = 5, n.iter = 500000,
+                                        n.burnin = 20000, n.thin = 10000, DIC = T, jags.module = "mix"))
+
 stopCluster(cl)
-save(list="cmed_route", file="Results/cmed_route_covsAR2.RData")
-
-### WESTERN MEDITERRANEAN
-ncores <- detectCores() - 1  
-registerDoParallel(cores=ncores)  
-cl <- makeCluster(ncores)  
-
-df2$Incidence_WMR <- df2$deaths_WMR/(df2$deaths_WMR+df2$survivors_WMR+df2$arrivals_WMR)*100
-df2$Incidence_WMR[is.nan(df2$Incidence_WMR)] <- 0.01
-data_WMR <- list(y=df2$Incidence_WMR, N=length(df2$Incidence_WMR), At=df2$At_WMR)
-
-params <- c("w_b0", "w_b1", "q_b0", "q_b1", "delta_b0", "phi1", "phi2", "sigma2_w", "component_chosen")
-clusterExport(cl, list("data_WMR", "params"))
-system.time(wmed_route <- jags.parallel(data = data_WMR, inits = NULL, parameters.to.save = params,                  model.file = ar2_model, n.chains = 5, n.iter = 50000, n.burnin = 10000, n.thin = 1000, 
-            n.cluster = ncores, DIC = T, jags.seed=1234, RNGname = "Wichmann-Hill", 
-            jags.module = "mix"))
-stopCluster(cl)
-save(list="wmed_route", file="Results/wmed_route_covsAR2.RData")
-
-### EASTERN MEDITERRANEAN
-ncores <- detectCores() - 1  
-registerDoParallel(cores=ncores)  
-cl <- makeCluster(ncores)  
-
-df2$Incidence_EMR <- df2$deaths_EMR/(df2$deaths_EMR+df2$survivors_EMR+df2$arrivals_EMR)*100
-df2$Incidence_EMR[is.nan(df2$Incidence_EMR)] <- 0.01
-data_EMR <- list(y=df2$Incidence_EMR, N=length(df2$Incidence_EMR), At=df2$At_EMR)
-
-params <- c("w_b0", "w_b1", "q_b0", "q_b1", "delta_b0", "phi1", "phi2", "sigma2_w", "component_chosen")
-clusterExport(cl, list("data_EMR", "params"))
-system.time(emed_route <- jags.parallel(data = data_EMR, inits = NULL, parameters.to.save = params,                  model.file = ar2_model, n.chains = 5, n.iter = 50000, n.burnin = 10000, n.thin = 1000, 
-            n.cluster = ncores, DIC = T, jags.seed=1234, RNGname = "Wichmann-Hill", 
-            jags.module = "mix"))
-stopCluster(cl)
-save(list="emed_route", file="Results/emed_route_covsAR2.RData")
+save(list="cmed_route", file="../Results/cmed_route_AR2.RData")

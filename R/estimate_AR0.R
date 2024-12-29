@@ -12,17 +12,14 @@ df2 <- df[df$date_month >="2016-01-01" & df$date_month  <= "2023-11-01", ]
 df2 <- df2 %>% replace(is.na(.), 0)
 
 # JAGS to estimate parameters
-ar2_model <- function()
+ar0_model <- function()
 {
   # likelihood
-  x[1] ~ dnorm((delta_b0)/(1-phi1-phi2), (sigma2_w/(1-phi1^2-phi2^2))^-1)
-  x[2] ~ dnorm((delta_b0)/(1-phi1-phi2), (sigma2_w/(1-phi1^2-phi2^2))^-1)
-  for (t in 3:N) {
-    x[t] ~ dnorm((delta_b0) + phi1*x[t-1] + phi2*x[t-2], (sigma2_w/(1-phi1^2-phi2^2))^-1)
+  x[1] ~ dnorm(delta_b0, sigma2_w^-1)
+  for (t in 2:N) {
+    x[t] ~ dnorm(delta_b0, sigma2_w^-1)
   }
   delta_b0 ~ dnorm(0, 1/1000)
-  phi1 ~ dunif(-1, 1)
-  phi2 ~ dunif(-1, 1)
   tau ~ dgamma(0.001, 0.001)
   sigma2_w <- 1/tau
 }
@@ -33,10 +30,10 @@ registerDoParallel(cores=ncores)
 cl <- makeCluster(ncores)
 
 data_CMR <- list(x=df2$mortality_rate*100, N=length(df2$mortality_rate))
-params <- c("delta_b0", "phi1", "phi2", "sigma2_w")
+params <- c("delta_b0", "sigma2_w")
 clusterExport(cl, list("data_CMR", "params"))
 system.time(cmed_route <- jags.parallel(data = data_CMR, inits = NULL, parameters.to.save = params,
-                                        model.file = ar2_model, n.chains = 5, n.iter = 500000,
+                                        model.file = ar0_model, n.chains = 5, n.iter = 500000,
                                         n.burnin = 20000, n.thin = 10000, DIC = T, jags.module = "mix"))
 stopCluster(cl)
-save(list="cmed_route", file="../Results/cmed_route_std_ar2.RData")
+save(list="cmed_route", file="../Results/cmed_route_std_ar0.RData")
